@@ -9,6 +9,8 @@
 #import "MainViewController.h"
 #import "YelpClient.h"
 #import "ListingTableViewCell.h"
+#import "MBProgressHUD.h"
+#import "SearchFilterViewController.h"
 
 NSString * const kYelpConsumerKey = @"Vnjp7ZF04kiQ7sK2o1vnRA";
 NSString * const kYelpConsumerSecret = @"14zcRgDb8vjCV7gdOG8b6blT7dk";
@@ -21,6 +23,7 @@ NSString * const kYelpTokenSecret = @"CJBo7INY6j42rDN9GsvJ7SaXIOQ";
 
 @property (nonatomic, strong) YelpClient *client;
 @property (nonatomic, strong) NSMutableArray *listings;
+@property MBProgressHUD *hud;
 
 @end
 
@@ -41,6 +44,10 @@ NSString * const kYelpTokenSecret = @"CJBo7INY6j42rDN9GsvJ7SaXIOQ";
     [super viewDidLoad];
     [self setupDefaults];
     // Do any additional setup after loading the view from its nib.
+}
+
+-(void)viewWillAppear:(BOOL)animated {
+    [self.navigationController setNavigationBarHidden:YES animated:YES];
 }
 
 #pragma mark - Setting up defaults
@@ -76,40 +83,55 @@ NSString * const kYelpTokenSecret = @"CJBo7INY6j42rDN9GsvJ7SaXIOQ";
 #pragma mark - Search methods
 
 -(void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
-//    NSLog(@"search string =  %@", searchText);
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     [self performSelector:@selector(searchYelpWithString:) withObject:searchText afterDelay:0.8];
 }
 
 // Dismiss the keyboard after the user hits search
 -(void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
-    NSLog(@"search button clicked");
     [searchBar resignFirstResponder];
 }
 
-// Pass strings to the main API function
+// Pass search text to the main API function
 -(void)searchYelpWithString: (NSString *) searchText {
-    NSLog(@"string here is %@", searchText);
     [self getDatafromYelp:searchText];
 }
+
+- (IBAction)filterButtonClicked:(id)sender {
+    SearchFilterViewController *searchFilterViewController = [[SearchFilterViewController alloc]init];
+    [self.navigationController pushViewController:searchFilterViewController animated:YES];
+}
+
 
 
 #pragma mark - API calls
 -(void)getDatafromYelp: (NSString *) searchTerm {
-
+    [self showHUD];
     // You can register for Yelp API keys here: http://www.yelp.com/developers/manage_api_keys
     self.client = [[YelpClient alloc] initWithConsumerKey:kYelpConsumerKey consumerSecret:kYelpConsumerSecret accessToken:kYelpToken accessSecret:kYelpTokenSecret];
     
     [self.client searchWithTerm:searchTerm success:^(AFHTTPRequestOperation *operation, id response) {
-//        NSDictionary *test = [response objectForKey:@"businesses"];
         self.listings = [response objectForKey:@"businesses"];
-//        NSLog(@"count is %d", [self.listings count]);
         [self.listingTableView reloadData];
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"error: %@", [error description]);
     }];
     
+    [self hideHUD];
+    
+}
+
+#pragma mark - Loading icons
+- (void) showHUD {
+    self.hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    self.hud.mode = MBProgressHUDModeIndeterminate;
+    self.hud.labelText = @"loading";
+    [self.hud show:YES];
+}
+
+- (void) hideHUD {
+    [self.hud hide:YES];
 }
 
 
