@@ -16,7 +16,7 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="2Py-xQ-yOo">
-                    <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                    <rect key="frame" x="0.0" y="64" width="320" height="504"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <connections>
@@ -24,13 +24,25 @@
                         <outlet property="delegate" destination="-1" id="sjy-9d-lUz"/>
                     </connections>
                 </tableView>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="OIo-ha-bjc">
+                    <rect key="frame" x="0.0" y="0.0" width="320" height="64"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <color key="backgroundColor" red="0.85098046059999999" green="0.0" blue="0.0039215688589999999" alpha="1" colorSpace="deviceRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="64" id="DI7-Lt-BeC"/>
+                    </constraints>
+                </view>
             </subviews>
             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
             <constraints>
-                <constraint firstAttribute="bottom" secondItem="2Py-xQ-yOo" secondAttribute="bottom" id="PCc-Sy-jXZ"/>
-                <constraint firstItem="2Py-xQ-yOo" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="doa-Fl-uze"/>
-                <constraint firstAttribute="trailing" secondItem="2Py-xQ-yOo" secondAttribute="trailing" id="ege-yY-Vyl"/>
-                <constraint firstItem="2Py-xQ-yOo" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="rTx-f5-UMa"/>
+                <constraint firstItem="2Py-xQ-yOo" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="CyX-Xw-W8H"/>
+                <constraint firstAttribute="trailing" secondItem="2Py-xQ-yOo" secondAttribute="trailing" id="GG2-ZO-Fp6"/>
+                <constraint firstItem="OIo-ha-bjc" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="Iqs-KA-w7Q"/>
+                <constraint firstItem="2Py-xQ-yOo" firstAttribute="top" secondItem="OIo-ha-bjc" secondAttribute="bottom" id="Irr-bq-0cM"/>
+                <constraint firstAttribute="trailing" secondItem="OIo-ha-bjc" secondAttribute="trailing" id="S1n-PA-dBo"/>
+                <constraint firstItem="OIo-ha-bjc" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="WOQ-pd-3cL"/>
+                <constraint firstItem="2Py-xQ-yOo" firstAttribute="top" secondItem="OIo-ha-bjc" secondAttribute="bottom" id="k2D-rg-dTu"/>
+                <constraint firstAttribute="bottom" secondItem="2Py-xQ-yOo" secondAttribute="bottom" id="lpE-M7-BdU"/>
             </constraints>
             <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="lightContent"/>
             <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
