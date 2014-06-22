@@ -9,5 +9,5 @@
 #import <UIKit/UIKit.h>
 
 @interface ListingTableViewCell : UITableViewCell
-
+@property (nonatomic, strong) NSDictionary *listing;
 @end
