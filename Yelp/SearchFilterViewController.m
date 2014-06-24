@@ -9,8 +9,7 @@
 #import "SearchFilterViewController.h"
 
 @interface SearchFilterViewController ()
-
-@property (nonatomic,assign) int collapsedState;
+@property (nonatomic, strong) NSMutableArray *filters;
 
 @end
 
@@ -21,6 +20,40 @@
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         // Custom initialization
+//        self.filters = @{
+//                         @"deals":@{@"<#string#>": <#object, ...#>}}
+        NSDictionary *sortFilter = @{
+                                     @"name":@"sort",
+                                     @"type":@"collapse",
+                                     @"options":@[@"Best Match", @"Disatnce",@"Rating"],
+                                     @"options_api":@[@"0",@"1",@"2"]
+                                     };
+        
+        NSDictionary *searchRadiusFilter = @{
+                                             @"name":@"radius_filter",
+                                             @"type":@"collapse",
+                                             @"options":@[@"50 meters", @"100 meters",@"500 meters",@"1000 meters"],
+                                             @"options_api":@[@"50",@"100",@"500",@"1000"]
+                                             };
+        NSDictionary *mostPopularFilter = @{
+                                            @"name":@"deals_filter",
+                                            @"type":@"switch",
+                                            @"options":@[@"Deal"],
+                                            @"options_api":@[@"false"]
+                                            };
+        
+        NSDictionary *categoryFilter = @{
+                                         @"name":@"category_filter",
+                                         @"type":@"list",
+                                         @"options":@[@"Vegan", @"Vegetarian", @"Indian", @"Thai", @"Mexican", @"Mediterranean"],
+                                         @"options_api":@[@"vegan", @"vegetarian", @"indpak", @"thai", @"mexican", @"mediterranean"]
+                                         };
+
+        
+        self.filters = [NSMutableArray arrayWithObjects:sortFilter,searchRadiusFilter,mostPopularFilter,categoryFilter, nil];
+        
+        NSLog(@"number of filters are %d, options_api = %@", [self.filters count],[self.filters[1] objectForKey:@"options"][0]);
+        
     }
     return self;
 }
@@ -43,24 +76,18 @@
 
 #pragma mark - Table methods
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-
-    if (self.collapsedState == section) {
-        return 1;
-    } else {
-        return 3;
-    }
     switch (section) {
         case 0:
-            return 2;
+            return [[self.filters[section] objectForKey:@"options"] count];
             break;
         case 1:
-            return 2;
+            return [[self.filters[section] objectForKey:@"options"] count];
             break;
         case 2:
-            return 5;
+            return [[self.filters[section] objectForKey:@"options"] count];
             break;
         case 3:
-            return 2;
+            return [[self.filters[section] objectForKey:@"options"] count];
             break;
         default:
             return 0;
@@ -71,16 +98,16 @@
 -(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     switch (section) {
         case 0:
-            return @"Category";
-            break;
-        case 1:
             return @"Sort";
             break;
-        case 2:
+        case 1:
             return @"Radius";
             break;
-        case 3:
+        case 2:
             return @"Deals";
+            break;
+        case 3:
+            return @"Categories";
             break;
         default:
             return @"";
@@ -89,28 +116,35 @@
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 4;
+    return [self.filters count];
 }
 
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
+    //pick up one dictionary at a time
+    NSDictionary *currentFilter = self.filters[indexPath.section];
+//    NSLog(@"current filter for %@ are %@", [currentFilter objectForKey:@"name"],currentFilter);
     UITableViewCell *cell = [[UITableViewCell  alloc]init];
+    cell.textLabel.text = [currentFilter objectForKey:@"options"][indexPath.row];
     
-    if (indexPath.section == 0) {
+    if ([[currentFilter objectForKey:@"type"] isEqualToString:@"switch"]) {
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        
         UISwitch *switchView = [[UISwitch alloc]initWithFrame:CGRectZero];
         [switchView addTarget:self action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
         [switchView setTag:indexPath.row];
-        cell.textLabel.text = @"Delas?";
+        
+        cell.textLabel.text = @"Deals?";
         cell.accessoryView = switchView;
         
-    } else {
-//        UITableViewCell *cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
-        cell.textLabel.text = @"cell here";
+    } else if ([[currentFilter objectForKey:@"type"] isEqualToString:@"list"]) {
+        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    } else if ([[currentFilter objectForKey:@"type"] isEqualToString:@"collapse"]) {
         
-
     }
+    
+    
     return cell;
         
 }
