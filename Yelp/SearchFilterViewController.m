@@ -10,6 +10,8 @@
 
 @interface SearchFilterViewController ()
 @property (nonatomic, strong) NSMutableArray *filters;
+@property (nonatomic, strong) NSMutableDictionary *expandedState;
+@property (nonatomic, strong) NSMutableDictionary *selectedState;
 
 @end
 
@@ -71,6 +73,8 @@
 
 - (void)setupDefaults {
     self.title = @"Filters";
+    self.expandedState = [[NSMutableDictionary alloc] initWithCapacity:4];
+    self.selectedState = [[NSMutableDictionary alloc] initWithCapacity:4];
 //    self.navigationController
 }
 
@@ -122,7 +126,7 @@
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    //pick up one dictionary at a time
+    //pick up one dictionary at a time (one dict per section)
     NSDictionary *currentFilter = self.filters[indexPath.section];
 //    NSLog(@"current filter for %@ are %@", [currentFilter objectForKey:@"name"],currentFilter);
     UITableViewCell *cell = [[UITableViewCell  alloc]init];
@@ -130,12 +134,9 @@
     
     if ([[currentFilter objectForKey:@"type"] isEqualToString:@"switch"]) {
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
-        
         UISwitch *switchView = [[UISwitch alloc]initWithFrame:CGRectZero];
         [switchView addTarget:self action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
         [switchView setTag:indexPath.row];
-        
-        cell.textLabel.text = @"Deals?";
         cell.accessoryView = switchView;
         
     } else if ([[currentFilter objectForKey:@"type"] isEqualToString:@"list"]) {
@@ -154,17 +155,32 @@
 }
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-//    [tableView deselectRowAtIndexPath:indexPath animated:YES];
-//    
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    
+    //pick up one dictionary at a time (one dict per section)
+    NSDictionary *currentFilter = self.filters[indexPath.section];
+    
+    if ([[currentFilter objectForKey:@"type"] isEqualToString:@"list"]) {
+        if ([[self.selectedState objectForKey:[currentFilter objectForKey:@"options"][indexPath.row]] isEqualToValue:@(YES)]) {
+            self.selectedState[[currentFilter objectForKey:@"options"][indexPath.row]] = @NO;
+            NSLog(@"uncheckd box is %@", [self.selectedState objectForKey:[currentFilter objectForKey:@"options"][indexPath.row]]);
+        } else {
+//            [self.selectedState objectForKey:[currentFilter objectForKey:@"options"][indexPath.row]] = @YES;
+            self.selectedState[[currentFilter objectForKey:@"options"][indexPath.row]] = @YES;
+            NSLog(@"checked value is %@", [self.selectedState objectForKey:[currentFilter objectForKey:@"options"][indexPath.row]]);
+        }
+    }
+    
+//
 //    int previous = self.collapsedState;
 //    self.collapsedState = indexPath.section;
-//    
+//
 //    NSMutableIndexSet *set = [NSMutableIndexSet indexSetWithIndex:previous];
 //    [set addIndex:self.collapsedState];
 //
 //    
-//    [tableView reloadSections:set withRowAnimation:UITableViewRowAnimationAutomatic];
-//    
+    [tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationAutomatic];
+//
 //    [tableView reloadData];
 }
 
