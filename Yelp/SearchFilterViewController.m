@@ -13,6 +13,8 @@
 @property (nonatomic, strong) NSMutableDictionary *expandedState;
 @property (nonatomic, strong) NSMutableDictionary *selectedState;
 
+@property NSUserDefaults *defaults;
+
 @end
 
 @implementation SearchFilterViewController
@@ -70,33 +72,33 @@
 - (IBAction)cancelButtonClicked:(id)sender {
     [self.navigationController popToRootViewControllerAnimated:YES];
 }
+- (IBAction)searchButtonClicked:(id)sender {
+    [self.navigationController popToRootViewControllerAnimated:YES];
+}
 
 - (void)setupDefaults {
     self.title = @"Filters";
     self.expandedState = [[NSMutableDictionary alloc] initWithCapacity:4];
     self.selectedState = [[NSMutableDictionary alloc] initWithCapacity:4];
+    
+    self.defaults = [NSUserDefaults standardUserDefaults];
 //    self.navigationController
 }
 
 #pragma mark - Table methods
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    switch (section) {
-        case 0:
-            return [[self.filters[section] objectForKey:@"options"] count];
-            break;
-        case 1:
-            return [[self.filters[section] objectForKey:@"options"] count];
-            break;
-        case 2:
-            return [[self.filters[section] objectForKey:@"options"] count];
-            break;
-        case 3:
-            return [[self.filters[section] objectForKey:@"options"] count];
-            break;
-        default:
-            return 0;
-            break;
+
+    //pick up one dictionary at a time (one dict per section)
+    NSDictionary *currentFilter = self.filters[section];
+    
+    if ([[currentFilter objectForKey:@"type"] isEqualToString:@"list"]) {
+        return [[currentFilter objectForKey:@"options_api"] count];
+    } else if ([[currentFilter objectForKey:@"type"] isEqualToString:@"collapse"]) {
+        return [[currentFilter objectForKey:@"options_api"] count];
     }
+    
+    return [[currentFilter objectForKey:@"options_api"] count];
+
 }
 
 -(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
@@ -153,7 +155,12 @@
 }
 
 -(void)switchChanged: (id) sender {
-    NSLog(@"toggle changed %d", [sender tag]);
+    if ([[self.selectedState objectForKey:@"deals_filter"] isEqual:@YES]) {
+        self.selectedState[@"deals_filter"] = @NO;
+    } else {
+        self.selectedState[@"deals_filter"] = @YES;
+    }
+    NSLog(@"deals_filter is %@", self.selectedState[@"deals_filter"]);
 }
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -165,14 +172,22 @@
     if ([[currentFilter objectForKey:@"type"] isEqualToString:@"list"]) {
         if ([[self.selectedState objectForKey:[currentFilter objectForKey:@"options_api"][indexPath.row]] isEqual:@YES]) {
             self.selectedState[[currentFilter objectForKey:@"options_api"][indexPath.row]] = @NO;
-//            NSLog(@"uncheckd box is %@", [self.selectedState objectForKey:[currentFilter objectForKey:@"options_api"][indexPath.row]]);
         } else {
             self.selectedState[[currentFilter objectForKey:@"options_api"][indexPath.row]] = @YES;
-//            NSLog(@"checked value is %@", [self.selectedState objectForKey:[currentFilter objectForKey:@"options_api"][indexPath.row]]);
         }
+    } else if ([[currentFilter objectForKey:@"type"] isEqualToString:@"collapse"]) {
+        if ([self.expandedState[[currentFilter objectForKey:@"options_api"][indexPath.row]] isEqual:@YES]) {
+            self.expandedState[[currentFilter objectForKey:@"options_api"][indexPath.row]] = @NO;
+        } else {
+            self.expandedState[[currentFilter objectForKey:@"options_api"][indexPath.row]] = @YES;
+        }
+
+        NSLog(@"selected value is %@", [currentFilter objectForKey:@"options_api"][indexPath.row]);
+//        }
     }
     
-    NSLog(@"Dictionary looks like this %@", self.selectedState);
+//    NSLog(@"List dict looks like this %@", self.expandedState);
+//    NSLog(@"Category dict looks like this %@", self.selectedState);
     
 //
 //    int previous = self.collapsedState;
@@ -181,7 +196,14 @@
 //    NSMutableIndexSet *set = [NSMutableIndexSet indexSetWithIndex:previous];
 //    [set addIndex:self.collapsedState];
 //
-//    
+//
+    
+    [self.defaults setObject:self.expandedState forKey:@"expandedState"];
+    [self.defaults setObject:self.selectedState forKey:@"selectedState"];
+    
+    //imp. don't forget to synchronize (save in other words)
+    [self.defaults synchronize];
+    
     [tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationAutomatic];
 //
 //    [tableView reloadData];

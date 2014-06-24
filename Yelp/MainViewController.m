@@ -25,6 +25,8 @@ NSString * const kYelpTokenSecret = @"CJBo7INY6j42rDN9GsvJ7SaXIOQ";
 @property (nonatomic, strong) NSMutableArray *listings;
 @property MBProgressHUD *hud;
 
+@property NSUserDefaults *searchStringDefault;
+
 @end
 
 @implementation MainViewController
@@ -34,7 +36,7 @@ NSString * const kYelpTokenSecret = @"CJBo7INY6j42rDN9GsvJ7SaXIOQ";
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     //uncomment this when you want to fetch real data
     if (self) {
-        [self getDatafromYelp:@"Restaurants"];
+        [self getDatafromYelp:@"Restaurants" options:nil];
     }
     return self;
 }
@@ -48,6 +50,39 @@ NSString * const kYelpTokenSecret = @"CJBo7INY6j42rDN9GsvJ7SaXIOQ";
 
 -(void)viewWillAppear:(BOOL)animated {
     [self.navigationController setNavigationBarHidden:YES animated:YES];
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    NSLog(@"defaults are %@, %@", [defaults objectForKey:@"expandedState"], [defaults objectForKey:@"selectedState"]);
+    
+    NSDictionary *expandedState = [defaults objectForKey:@"expandedState"];
+    NSDictionary *selectedState = [defaults objectForKey:@"selectedState"];
+    
+    NSMutableDictionary *searchParams;
+    
+    for (NSString *value in expandedState) {
+        if ((int)value < 3) {
+            if(value) {
+                searchParams[@"sort"] = value;
+            }
+        } else {
+            if (value) {
+                searchParams[@"radius_filter"] = value;
+            }
+        }
+    }
+
+    
+    for (NSString *category in selectedState) {
+        if (category) {
+            searchParams[@"category_filter"] = category;
+        }
+    }
+    
+    
+    NSLog(@"search params are %@", searchParams);
+    [self getDatafromYelp:[self.searchStringDefault objectForKey:@"searchTerm"] options:searchParams];
+    
 }
 
 #pragma mark - Setting up defaults
@@ -59,6 +94,10 @@ NSString * const kYelpTokenSecret = @"CJBo7INY6j42rDN9GsvJ7SaXIOQ";
 //    [[UINavigationBar appearance] setBarTintColor:[UIColor colorWithRed:0.94 green:0 blue:0 alpha:1]];
     self.yelpSearchBar.placeholder = @"Search";
     [self.yelpSearchBar setBarTintColor:[UIColor colorWithRed:0.8 green:0 blue:0.02 alpha:1]];
+    
+    self.searchStringDefault = [NSUserDefaults standardUserDefaults];
+    [self.searchStringDefault setObject:@"Thai" forKey:@"searchTerm"];
+    [self.searchStringDefault synchronize];
 }
 
 #pragma mark - Overriding top navigation bar
@@ -94,7 +133,12 @@ NSString * const kYelpTokenSecret = @"CJBo7INY6j42rDN9GsvJ7SaXIOQ";
 
 // Pass search text to the main API function
 -(void)searchYelpWithString: (NSString *) searchText {
-    [self getDatafromYelp:searchText];
+    [self.searchStringDefault setObject:searchText forKey:@"searchTerm"];
+    [self.searchStringDefault synchronize];
+
+    self.yelpSearchBar.text = [self.searchStringDefault objectForKey:@"searchTerm"];
+    [self getDatafromYelp:searchText options:nil];
+
 }
 
 - (IBAction)filterButtonClicked:(id)sender {
@@ -105,12 +149,12 @@ NSString * const kYelpTokenSecret = @"CJBo7INY6j42rDN9GsvJ7SaXIOQ";
 
 
 #pragma mark - API calls
--(void)getDatafromYelp: (NSString *) searchTerm {
+-(void)getDatafromYelp: (NSString *) searchTerm options: (NSDictionary *) searchFilters {
     [self showHUD];
     // You can register for Yelp API keys here: http://www.yelp.com/developers/manage_api_keys
     self.client = [[YelpClient alloc] initWithConsumerKey:kYelpConsumerKey consumerSecret:kYelpConsumerSecret accessToken:kYelpToken accessSecret:kYelpTokenSecret];
     
-    [self.client searchWithTerm:searchTerm success:^(AFHTTPRequestOperation *operation, id response) {
+    [self.client searchWithTerm:searchTerm options:searchFilters success:^(AFHTTPRequestOperation *operation, id response) {
         self.listings = [response objectForKey:@"businesses"];
         [self.listingTableView reloadData];
         
