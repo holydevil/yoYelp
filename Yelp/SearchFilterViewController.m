@@ -140,7 +140,9 @@
         cell.accessoryView = switchView;
         
     } else if ([[currentFilter objectForKey:@"type"] isEqualToString:@"list"]) {
-        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+        if ([[self.selectedState objectForKey:[currentFilter objectForKey:@"options_api"][indexPath.row]] isEqual:@YES]) {
+            cell.accessoryType = UITableViewCellAccessoryCheckmark;
+        }
     } else if ([[currentFilter objectForKey:@"type"] isEqualToString:@"collapse"]) {
         
     }
@@ -161,15 +163,16 @@
     NSDictionary *currentFilter = self.filters[indexPath.section];
     
     if ([[currentFilter objectForKey:@"type"] isEqualToString:@"list"]) {
-        if ([[self.selectedState objectForKey:[currentFilter objectForKey:@"options"][indexPath.row]] isEqualToValue:@(YES)]) {
-            self.selectedState[[currentFilter objectForKey:@"options"][indexPath.row]] = @NO;
-            NSLog(@"uncheckd box is %@", [self.selectedState objectForKey:[currentFilter objectForKey:@"options"][indexPath.row]]);
+        if ([[self.selectedState objectForKey:[currentFilter objectForKey:@"options_api"][indexPath.row]] isEqual:@YES]) {
+            self.selectedState[[currentFilter objectForKey:@"options_api"][indexPath.row]] = @NO;
+//            NSLog(@"uncheckd box is %@", [self.selectedState objectForKey:[currentFilter objectForKey:@"options_api"][indexPath.row]]);
         } else {
-//            [self.selectedState objectForKey:[currentFilter objectForKey:@"options"][indexPath.row]] = @YES;
-            self.selectedState[[currentFilter objectForKey:@"options"][indexPath.row]] = @YES;
-            NSLog(@"checked value is %@", [self.selectedState objectForKey:[currentFilter objectForKey:@"options"][indexPath.row]]);
+            self.selectedState[[currentFilter objectForKey:@"options_api"][indexPath.row]] = @YES;
+//            NSLog(@"checked value is %@", [self.selectedState objectForKey:[currentFilter objectForKey:@"options_api"][indexPath.row]]);
         }
     }
+    
+    NSLog(@"Dictionary looks like this %@", self.selectedState);
     
 //
 //    int previous = self.collapsedState;
